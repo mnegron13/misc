@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAP Calibration Check-In · Aug 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root[data-theme="light"] {
+    --bg: #faf7f2;
+    --bg-2: #f2ede4;
+    --bg-3: #e8e1d3;
+    --line: #d9d2c1;
+    --line-hi: #b8ae97;
+    --ink: #1f1e1a;
+    --ink-2: #56534a;
+    --ink-3: #8a8579;
+    --accent: #2d5f3f;
+    --accent-2: #4a8a5f;
+    --accent-tint: rgba(45, 95, 63, 0.08);
+    --warn: #c85a2c;
+    --warn-tint: rgba(200, 90, 44, 0.1);
+    --alert: #a63838;
+    --alert-tint: rgba(166, 56, 56, 0.1);
+    --plum: #7a3f7a;
+    --plum-tint: rgba(122, 63, 122, 0.1);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14140f;
+    --bg-2: #1e1e18;
+    --bg-3: #2a2a22;
+    --line: #33332a;
+    --line-hi: #4a4a40;
+    --ink: #f0ebe0;
+    --ink-2: #b5b0a3;
+    --ink-3: #7a7568;
+    --accent: #a8dc9a;
+    --accent-2: #7fc9a0;
+    --accent-tint: rgba(168, 220, 154, 0.1);
+    --warn: #f0a067;
+    --warn-tint: rgba(240, 160, 103, 0.12);
+    --alert: #e88585;
+    --alert-tint: rgba(232, 133, 133, 0.12);
+    --plum: #d4a8d4;
+    --plum-tint: rgba(212, 168, 212, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; overflow: hidden; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    padding-bottom: 1px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  a:hover {
+    color: var(--accent-2);
+    border-bottom-color: var(--accent);
+  }
+
+  .display {
+    font-family: 'Fraunces', 'Georgia', serif;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    font-optical-sizing: auto;
+  }
+
+  /* Nav */
+  .top-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 50;
+    padding: 1.25rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .top-nav > * { pointer-events: auto; }
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--ink-2);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .nav-brand::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 12px var(--accent);
+    animation: pulse 2.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+  .theme-toggle {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink-2);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s;
+    font-size: 1rem;
+  }
+
+  .theme-toggle:hover { border-color: var(--accent); transform: rotate(20deg); }
+
+  /* Stage */
+  .stage { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+
+  .slide {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    padding: 6rem 5rem 6rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(30px);
+    transition: opacity 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+                visibility 0s linear 0.5s;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slide.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+    transition-delay: 0s;
+  }
+
+  .slide.exiting { transform: translateX(-30px); }
+
+  .slide-inner { max-width: 1020px; margin: 0 auto; width: 100%; }
+
+  .slide-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+  }
+
+  .slide-num::after { content: ''; flex: 0 0 3rem; height: 1px; background: var(--accent); }
+
+  h2.slide-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: clamp(2.5rem, 5.5vw, 4.5rem);
+    letter-spacing: -0.03em;
+    line-height: 0.98;
+    color: var(--ink);
+    margin-bottom: 1.75rem;
+  }
+
+  h2.slide-title em { font-style: italic; color: var(--accent); font-weight: 400; }
+
+  .slide-lede {
+    font-size: 1.15rem;
+    color: var(--ink-2);
+    max-width: 60ch;
+    line-height: 1.5;
+    margin-bottom: 2.5rem;
+  }
+
+  /* Hero */
+  .hero-eyebrow {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .hero-eyebrow::before { content: ''; width: 2rem; height: 1px; background: var(--ink-3); }
+
+  .hero-title {
+    font-family: 'Fraunces', 'Georgia', serif;
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 0.92;
+    font-size: clamp(3.5rem, 9vw, 7.5rem);
+    margin-bottom: 1.75rem;
+    color: var(--ink);
+  }
+
+  .hero-title em { font-style: italic; color: var(--accent); font-weight: 400; }
+
+  .hero-sub {
+    font-size: 1.4rem;
+    color: var(--ink-2);
+    max-width: 42ch;
+    line-height: 1.4;
+    margin-bottom: 3.5rem;
+  }
+
+  .countdown {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding: 1.75rem 2.5rem;
+    background: var(--accent-tint);
+    border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+    border-radius: 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .countdown::before {
+    content: '';
+    position: absolute;
+    top: -50%; right: -20%;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, var(--accent-tint), transparent 70%);
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-10px, -10px); } }
+
+  .countdown-num {
+    font-family: 'Fraunces', serif;
+    font-size: 4.5rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .countdown-label {
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    letter-spacing: 0.02em;
+    max-width: 12ch;
+    line-height: 1.3;
+  }
+
+  .countdown-label strong { color: var(--ink); font-weight: 600; display: block; margin-bottom: 0.15rem; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 2rem; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px; top: 6px; bottom: 6px;
+    width: 2px;
+    background: var(--line);
+  }
+
+  .step { position: relative; padding-bottom: 1.5rem; padding-left: 1.5rem; }
+  .step:last-child { padding-bottom: 0; }
+
+  .step::before {
+    content: '';
+    position: absolute;
+    left: -2rem; top: 4px;
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 3px solid var(--bg);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+
+  .step-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  .step-title {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.3rem;
+    line-height: 1.35;
+  }
+
+  .step-body {
+    font-size: 0.94rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 65ch;
+  }
+
+  /* Stats */
+  .stat-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    margin-bottom: 2rem;
+    padding: 1.75rem 0;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+
+  .stat { padding: 0 1.5rem; border-right: 1px solid var(--line); }
+  .stat:last-child { border-right: none; }
+
+  .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 2.5rem;
+    font-weight: 500;
+    color: var(--accent);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.4rem;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    line-height: 1.4;
+  }
+
+  .see-source {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: block;
+    margin-top: 1rem;
+  }
+
+  /* Flag cards */
+  .flag-card {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--alert);
+    border-radius: 12px;
+    padding: 1.25rem 1.55rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .flag-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.65rem;
+    flex-wrap: wrap;
+  }
+
+  .flag-title { font-size: 1rem; font-weight: 600; color: var(--ink); line-height: 1.3; }
+
+  .flag-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  .chip {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    padding: 0.22rem 0.55rem;
+    border-radius: 100px;
+    text-transform: uppercase;
+    background: var(--bg-3);
+    color: var(--ink-2);
+    border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  .chip.alert { background: var(--alert-tint); color: var(--alert); border-color: transparent; }
+  .chip.warn { background: var(--warn-tint); color: var(--warn); border-color: transparent; }
+  .chip.plum { color: var(--plum); border-color: color-mix(in srgb, var(--plum) 30%, transparent); }
+
+  .flag-body {
+    font-size: 0.9rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    margin-bottom: 0.65rem;
+  }
+
+  .flag-ask {
+    display: flex;
+    gap: 0.85rem;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    background: var(--accent-tint);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+
+  .flag-ask-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    padding-top: 0.15rem;
+    min-width: 4.5rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* Patterns */
+  .pattern-list { list-style: none; padding: 0; }
+
+  .pattern-item {
+    padding: 1.05rem 0;
+    border-bottom: 1px dashed var(--line);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+    align-items: baseline;
+  }
+
+  .pattern-item:last-child { border-bottom: none; }
+
+  .pattern-title { font-size: 0.98rem; color: var(--ink); font-weight: 500; margin-bottom: 0.2rem; }
+
+  .pattern-body { font-size: 0.87rem; color: var(--ink-2); max-width: 65ch; line-height: 1.45; }
+
+  .pattern-action { font-size: 0.82rem; color: var(--accent); margin-top: 0.4rem; font-weight: 500; }
+
+  /* Ask */
+  .ask-hero { max-width: 780px; margin: 0 auto; }
+
+  .ask-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    color: var(--plum);
+    text-transform: uppercase;
+    margin-bottom: 1.25rem;
+    font-weight: 600;
+  }
+
+  .ask-hero h3 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.25rem, 5vw, 3.5rem);
+    font-weight: 500;
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+    color: var(--ink);
+  }
+
+  .ask-hero h3 em { color: var(--plum); font-style: italic; font-weight: 400; }
+
+  .ask-intro {
+    font-size: 1.1rem;
+    color: var(--ink-2);
+    line-height: 1.5;
+    max-width: 62ch;
+    margin-bottom: 2rem;
+  }
+
+  .ask-steps {
+    background: var(--plum-tint);
+    border: 1px solid color-mix(in srgb, var(--plum) 20%, transparent);
+    border-radius: 14px;
+    padding: 1.5rem 1.75rem;
+    counter-reset: step;
+    list-style: none;
+  }
+
+  .ask-steps li {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1rem;
+    padding: 0.65rem 0;
+    align-items: baseline;
+    counter-increment: step;
+    font-size: 0.98rem;
+    color: var(--ink);
+    line-height: 1.5;
+    border-bottom: 1px dashed color-mix(in srgb, var(--plum) 20%, transparent);
+  }
+
+  .ask-steps li:last-child { border-bottom: none; }
+
+  .ask-steps li::before {
+    content: counter(step);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--plum);
+    background: color-mix(in srgb, var(--plum) 15%, transparent);
+    width: 1.6rem; height: 1.6rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .ask-deadline {
+    margin-top: 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--plum);
+    font-weight: 600;
+  }
+
+  /* Roadmap */
+  .roadmap { display: flex; flex-direction: column; gap: 0.5rem; }
+
+  .road-step {
+    display: grid;
+    grid-template-columns: 110px 1fr auto;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    align-items: center;
+  }
+
+  .road-step.milestone {
+    background: var(--accent-tint);
+    border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+
+  .road-date {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+
+  .road-content .title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin-bottom: 0.15rem;
+    line-height: 1.3;
+  }
+
+  .road-content .desc { font-size: 0.85rem; color: var(--ink-2); line-height: 1.4; }
+
+  .road-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    background: var(--bg-3);
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .road-tag.you { color: var(--accent); background: var(--accent-tint); }
+  .road-tag.us { color: var(--plum); background: color-mix(in srgb, var(--plum) 10%, transparent); }
+  .road-tag.gate { color: var(--warn); background: var(--warn-tint); }
+
+  /* Controls */
+  .controls {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 40;
+    pointer-events: none;
+    background: linear-gradient(to top, var(--bg) 20%, transparent);
+  }
+
+  .controls > * { pointer-events: auto; }
+
+  .arrow-btn {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+  }
+
+  .arrow-btn:hover:not(:disabled) {
+    background: var(--accent-tint);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: scale(1.08);
+  }
+
+  .arrow-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .arrow-btn:active:not(:disabled) { transform: scale(0.95); }
+
+  .slide-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--ink-2);
+    letter-spacing: 0.1em;
+  }
+
+  .dot-nav { display: flex; gap: 0.5rem; }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--line-hi);
+    cursor: pointer;
+    transition: all 0.25s;
+    border: none;
+    padding: 0;
+  }
+
+  .dot:hover { background: var(--ink-3); transform: scale(1.3); }
+  .dot.active { background: var(--accent); width: 24px; border-radius: 100px; }
+
+  .keyboard-hint {
+    position: fixed;
+    bottom: 1.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: var(--ink-3);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  kbd {
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    color: var(--ink-2);
+    font-family: 'JetBrains Mono', monospace;
+    margin: 0 0.15rem;
+  }
+
+  @media (max-width: 900px) {
+    .slide { padding: 5rem 2rem 6rem; }
+    .top-nav { padding: 1rem 1.25rem; }
+    .stat-strip { grid-template-columns: repeat(2, 1fr); }
+    .stat { border-bottom: 1px solid var(--line); padding: 0.75rem 1rem; }
+    .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none; }
+    .stat:nth-child(2) { border-right: none; }
+    .road-step { grid-template-columns: 1fr; gap: 0.35rem; }
+    .road-tag { justify-self: start; }
+    .countdown { padding: 1.25rem 1.75rem; gap: 1rem; }
+    .countdown-num { font-size: 3rem; }
+    .keyboard-hint { display: none; }
+    .controls { padding: 1rem 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-nav">
+  <div class="nav-brand">QAP · Calibration Check-in · Aug 10</div>
+  <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">🌙</button>
+</div>
+
+<div class="stage">
+
+  <!-- SLIDE 1: HERO -->
+  <div class="slide active" data-slide="1">
+    <div class="slide-inner">
+      <div class="hero-eyebrow">Michael + Connor · Monday, Aug 10 · 30 min</div>
+      <h1 class="hero-title">A quick <em>calibration</em><br>check-in.</h1>
+      <p class="hero-sub">Where we are, what needs your eyes, and what happens next before we light this thing up.</p>
+      <div class="countdown">
+        <span class="countdown-num" id="countdown-num">—</span>
+        <span class="countdown-label"><strong>days until activation</strong>Phase 2 · Sept 1</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 2: WHERE WE'VE BEEN -->
+  <div class="slide" data-slide="2">
+    <div class="slide-inner">
+      <div class="slide-num">01 · Where we've been</div>
+      <h2 class="slide-title display">The <em>arc</em> so far.</h2>
+      <div class="timeline">
+        <div class="step">
+          <div class="step-date">Jun 22 – Jul 7</div>
+          <div class="step-title">Foundation locked</div>
+          <div class="step-body">Rewrote the rubric with partial credit anchors. Built the <a href="https://app.notion.com/p/349fdd08fcdc80408fe1d3fda13e30f1" target="_blank">12-skill taxonomy</a> and matching <a href="https://app.notion.com/p/30fae7697e5a4fefb59373ea443aa440" target="_blank">coaching library</a>. This is the vocabulary the coach agent draws from.</div>
+        </div>
+        <div class="step">
+          <div class="step-date">Jul 10 – 22</div>
+          <div class="step-title">Built the three-agent system in Dust</div>
+          <div class="step-body">A scorer, a coach, and an intake agent. Three separate jobs, deliberately separate so precision and warmth don't dilute each other.</div>
+        </div>
+        <div class="step">
+          <div class="step-date">Jul 15</div>
+          <div class="step-title">Calibrated against your gold set</div>
+          <div class="step-body">Ran the scorer blind against 22 cases you'd already scored. Three rounds of tuning got us from 14% → 57% exact agreement. Full write-up in the <a href="https://app.notion.com/p/396fdd08fcdc8155bc6dc871caab98cb" target="_blank">calibration report</a>.</div>
+        </div>
+        <div class="step">
+          <div class="step-date">Jul 31</div>
+          <div class="step-title">Kicked off shadow mode</div>
+          <div class="step-body">You uploaded July call transcripts, we validated the phone lane, and shadow mode officially started.</div>
+        </div>
+        <div class="step">
+          <div class="step-date">Aug 4</div>
+          <div class="step-title">You took the wheel</div>
+          <div class="step-body">Instead of the full 1,877-case batch, you directed a targeted per-rep sample: 4 cases per rep, one per full July week. All 8 reps sampled, all 30 phone transcripts processed. Every run summary is in the <a href="https://app.notion.com/p/3a5fdd08fcdc81e78ae6d094ea6ce2c8" target="_blank">Ebert Run Log</a>.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: STATE OF PLAY -->
+  <div class="slide" data-slide="3">
+    <div class="slide-inner">
+      <div class="slide-num">02 · Where we're at</div>
+      <h2 class="slide-title display">The <em>state</em> of play.</h2>
+      <p class="slide-lede">Aug 4's sample surfaced three real compliance calls, a few patterns worth naming, and one thing I need from you before the Aug 25 exit gate.</p>
+      <div class="stat-strip">
+        <div class="stat">
+          <div class="stat-num">156</div>
+          <div class="stat-label">Cases scored<br>(sample)</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">8 / 8</div>
+          <div class="stat-label">Reps<br>covered</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">3</div>
+          <div class="stat-label">Compliance<br>flags</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num">5</div>
+          <div class="stat-label">Patterns<br>to eyeball</div>
+        </div>
+      </div>
+      <div class="see-source">All cases live in the <a href="https://app.notion.com/p/c089c3d70b864835b02749dad1378712" target="_blank">Case Scores Log</a>. Filter by "Scored by = agent" and Aug 4 date.</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: COMPLIANCE FLAGS -->
+  <div class="slide" data-slide="4">
+    <div class="slide-inner">
+      <div class="slide-num">02 · Compliance flags · 3</div>
+      <h2 class="slide-title display">Your <em>call</em> on these.</h2>
+      <div class="flag-card">
+        <div class="flag-head">
+          <div class="flag-title">Jazmynne · missing paycheck / direct deposit</div>
+          <div class="flag-meta">
+            <span class="chip">Phone</span>
+            <span class="chip">Jul 13</span>
+            <span class="chip alert">Data Sec 0</span>
+          </div>
+        </div>
+        <div class="flag-body">Performed stop payment + reissue with only name + email verification. The DOB/last-4 SSN verifier she used on her other calls wasn't collected.</div>
+        <div class="flag-ask">
+          <div class="flag-ask-label">By Wed</div>
+          <div>Mark your verdict in the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a> under "Compliance flags" → real violation, acceptable shortcut, or coaching moment. Add your reasoning.</div>
+        </div>
+      </div>
+      <div class="flag-card">
+        <div class="flag-head">
+          <div class="flag-title">Adam · crew payment, wrong bank account</div>
+          <div class="flag-meta">
+            <span class="chip">Phone</span>
+            <span class="chip">Jul 27</span>
+            <span class="chip alert">Data Sec 0</span>
+          </div>
+        </div>
+        <div class="flag-body">Caller was the production coordinator, not the crew member. Adam disclosed the crew member's bank last-4, audit event, login timestamps, IP, device, and location to that unverified third party.</div>
+        <div class="flag-ask">
+          <div class="flag-ask-label">By Wed</div>
+          <div>Mark your verdict in the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a>. Feels clear to me but you know operational context better.</div>
+        </div>
+      </div>
+      <div class="flag-card">
+        <div class="flag-head">
+          <div class="flag-title">Adam · account merge · case 963480</div>
+          <div class="flag-meta">
+            <span class="chip">Email</span>
+            <span class="chip">Jul 30</span>
+            <span class="chip alert">Data Sec 0</span>
+          </div>
+        </div>
+        <div class="flag-body">Sensitive account merge with only email confirmation. No DOB / last-4 SSN visible in the record. A colleague later references verification that isn't observable anywhere on the case.</div>
+        <div class="flag-ask">
+          <div class="flag-ask-label">By Wed</div>
+          <div>Verdict in the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a>. Also: how do we score cases where verification may have happened off-record? That's a rubric decision I need from you.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: PATTERNS -->
+  <div class="slide" data-slide="5">
+    <div class="slide-inner">
+      <div class="slide-num">02 · Patterns · 5</div>
+      <h2 class="slide-title display">Worth <em>eyeballing</em>.</h2>
+      <ul class="pattern-list">
+        <li class="pattern-item">
+          <div>
+            <div class="pattern-title">Kate had one email case in Week 4</div>
+            <div class="pattern-body">Down from ~59–69 in prior weeks. Likely PTO.</div>
+            <div class="pattern-action">Confirm PTO in the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a> → Patterns section.</div>
+          </div>
+          <span class="chip plum">Verify</span>
+        </li>
+        <li class="pattern-item">
+          <div>
+            <div class="pattern-title">Sam's Related Links empty across all 4 cases</div>
+            <div class="pattern-body">Documentation deduction on every case. Consistent pattern, real coaching opportunity.</div>
+            <div class="pattern-action">Flag for his next 1:1, or let me know if you want coaching drafted for the Sept digest.</div>
+          </div>
+          <span class="chip">Coach</span>
+        </li>
+        <li class="pattern-item">
+          <div>
+            <div class="pattern-title">Vaneza's Jul 20 transcript truncated</div>
+            <div class="pattern-body">67-min call cut at ~10 min (Notion's 50KB limit). If long calls keep happening, we need chunked ingestion.</div>
+            <div class="pattern-action">I'll fix on my end. No action needed from you.</div>
+          </div>
+          <span class="chip warn">Fix</span>
+        </li>
+        <li class="pattern-item">
+          <div>
+            <div class="pattern-title">Systemic SLA field anomalies in Salesforce</div>
+            <div class="pattern-body">SLA_Met contradicts SLA_Breach on most email cases. The scorer used actual timestamps as designed, so scoring is fine.</div>
+            <div class="pattern-action">FYI only. Worth escalating to Rachel if it keeps happening.</div>
+          </div>
+          <span class="chip">FYI</span>
+        </li>
+        <li class="pattern-item">
+          <div>
+            <div class="pattern-title">3 unscored cases flagged for no-interaction</div>
+            <div class="pattern-body">Jeannine (voicemail + 33-sec self-resolve), Sam's Week 1 continuation, Maggie's Week 1 (Jazmynne covered).</div>
+            <div class="pattern-action">Confirm the rule caught them right in the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a>.</div>
+          </div>
+          <span class="chip">Confirm</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: THE BIG ASK -->
+  <div class="slide" data-slide="6">
+    <div class="slide-inner">
+      <div class="ask-hero">
+        <div class="ask-label">One thing I actually need</div>
+        <h3 class="display">Your manual scoring on <em>this sample</em>.</h3>
+        <p class="ask-intro">You directed the sample and the agent did its pass. What I don't have is your independent read on those same cases. Comparing your scores to the agent's is the whole point of shadow.</p>
+        <ol class="ask-steps">
+          <li>Open the <a href="https://app.notion.com/p/c089c3d70b864835b02749dad1378712" target="_blank">Case Scores Log</a> in one window and the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a> in another.</li>
+          <li>Score at least 44 cases (√1,877, rounded up). Mix reps and channels.</li>
+          <li>Log your score in the calibration sheet's table. When your score differs from the agent's by more than 0.5 points, note the root cause.</li>
+          <li>Fill in the compliance flag verdicts and patterns confirmations while you're in there.</li>
+          <li>Sign off at the bottom of the calibration sheet and Slack me.</li>
+        </ol>
+        <div class="ask-deadline">Deadline: Thu, Aug 14</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: WHAT'S NEXT -->
+  <div class="slide" data-slide="7">
+    <div class="slide-inner">
+      <div class="slide-num">03 · What comes next</div>
+      <h2 class="slide-title display">Three weeks to <em>go live</em>.</h2>
+      <div class="roadmap">
+        <div class="road-step">
+          <div class="road-date">Aug 10</div>
+          <div class="road-content">
+            <div class="title">This meeting</div>
+            <div class="desc">Walk the flags, align on the ask, unblock anything.</div>
+          </div>
+          <span class="road-tag us">Us</span>
+        </div>
+        <div class="road-step">
+          <div class="road-date">Aug 10 – 14</div>
+          <div class="road-content">
+            <div class="title">Connor scores the sample</div>
+            <div class="desc">≥44 cases in the <a href="https://app.notion.com/p/3bbfdd08fcdc816eb652cc4d3f5fed3f" target="_blank">calibration sheet</a>. Compliance verdicts + patterns confirmed.</div>
+          </div>
+          <span class="road-tag you">You</span>
+        </div>
+        <div class="road-step">
+          <div class="road-date">Aug 14 – 25</div>
+          <div class="road-content">
+            <div class="title">Michael refines anchors based on deltas</div>
+            <div class="desc">Anywhere your scores diverge from the agent's, fix the anchor once, re-score affected cases, confirm.</div>
+          </div>
+          <span class="road-tag us">Me</span>
+        </div>
+        <div class="road-step milestone">
+          <div class="road-date">Aug 25</div>
+          <div class="road-content">
+            <div class="title"><a href="https://app.notion.com/p/396fdd08fcdc8178b30cdee78f7c2b99" target="_blank">Phase 1 exit gate</a></div>
+            <div class="desc">80%+ agreement on the sample = go. Below that = one more shadow cycle.</div>
+          </div>
+          <span class="road-tag gate">Gate</span>
+        </div>
+        <div class="road-step">
+          <div class="road-date">Aug 26 – 31</div>
+          <div class="road-content">
+            <div class="title">Phase 2 pre-work</div>
+            <div class="desc">Playbook, approval workflow, dispute path, team comms.</div>
+          </div>
+          <span class="road-tag us">Me</span>
+        </div>
+        <div class="road-step milestone">
+          <div class="road-date">Sept 1</div>
+          <div class="road-content">
+            <div class="title"><a href="https://app.notion.com/p/396fdd08fcdc81f5941df3eddb6477d8" target="_blank">Phase 2 launches</a></div>
+            <div class="desc">Rep-facing digests start. You approve each one before it lands.</div>
+          </div>
+          <span class="road-tag gate">Launch</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="controls">
+  <button class="arrow-btn" id="prev-btn" aria-label="Previous slide">←</button>
+  <div class="slide-counter">
+    <span id="current-slide">1</span>
+    <span>/</span>
+    <span id="total-slides">7</span>
+    <div class="dot-nav" id="dot-nav"></div>
+  </div>
+  <button class="arrow-btn" id="next-btn" aria-label="Next slide">→</button>
+</div>
+
+<div class="keyboard-hint">
+  Use <kbd>←</kbd> <kbd>→</kbd> to navigate
+</div>
+
+<script>
+  const root = document.documentElement;
+  const toggle = document.getElementById('theme-toggle');
+  const initialTheme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+  root.setAttribute('data-theme', initialTheme);
+  toggle.textContent = initialTheme === 'dark' ? '☀️' : '🌙';
+
+  toggle.addEventListener('click', () => {
+    const current = root.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    toggle.textContent = next === 'dark' ? '☀️' : '🌙';
+  });
+
+  const target = new Date('2026-09-01T00:00:00');
+  const now = new Date();
+  const diff = target - now;
+  const days = Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+  document.getElementById('countdown-num').textContent = days;
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  let currentIndex = 0;
+
+  const prevBtn = document.getElementById('prev-btn');
+  const nextBtn = document.getElementById('next-btn');
+  const currentSlideEl = document.getElementById('current-slide');
+  const totalSlidesEl = document.getElementById('total-slides');
+  const dotNav = document.getElementById('dot-nav');
+
+  totalSlidesEl.textContent = totalSlides;
+
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `Slide ${i + 1}`);
+    dot.addEventListener('click', () => goToSlide(i));
+    dotNav.appendChild(dot);
+  }
+
+  function goToSlide(index) {
+    if (index < 0 || index >= totalSlides || index === currentIndex) return;
+    const current = slides[currentIndex];
+    const next = slides[index];
+
+    current.classList.remove('active');
+    current.classList.add('exiting');
+
+    setTimeout(() => { current.classList.remove('exiting'); }, 500);
+
+    next.classList.add('active');
+
+    currentIndex = index;
+    currentSlideEl.textContent = index + 1;
+
+    document.querySelectorAll('.dot').forEach((d, i) => {
+      d.classList.toggle('active', i === currentIndex);
+    });
+
+    prevBtn.disabled = currentIndex === 0;
+    nextBtn.disabled = currentIndex === totalSlides - 1;
+  }
+
+  prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
+  nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') goToSlide(currentIndex - 1);
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); goToSlide(currentIndex + 1); }
+  });
+
+  prevBtn.disabled = true;
+</script>
+
+</body>
+</html>
