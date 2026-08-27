@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI certification for Client Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#090B12;
+    --ink:#F4F6FB;
+    --ink-soft:rgba(244,246,251,.74);
+    --ink-mid:rgba(244,246,251,.6);
+    --ink-faint:rgba(244,246,251,.44);
+    --line:rgba(255,255,255,.11);
+
+    --glass:rgba(255,255,255,.05);
+    --glass-2:rgba(255,255,255,.035);
+    --glass-border:rgba(255,255,255,.14);
+
+    --l1:#5B8CF6;
+    --l2:#25CC94;
+    --l3:#9B7BFF;
+    --l4:#9DB2D6;
+    --accent:#8AA6FF;
+    --spectrum:linear-gradient(100deg,#5B8CF6 0%,#25CC94 36%,#9B7BFF 68%,#C9D3EC 100%);
+
+    --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+    --font-body:'Inter',ui-sans-serif,system-ui,-apple-system,sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;overflow:hidden;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(138,166,255,.35);}
+  a:hover{border-bottom-color:var(--accent);}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px;}
+
+  /* ---------- atmosphere ---------- */
+  .aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;background:var(--bg);}
+  .blob{position:absolute;width:62vw;height:62vw;border-radius:50%;filter:blur(36px);
+    opacity:0;transition:opacity 1.2s ease;will-change:transform,opacity;}
+  .b1{top:-16%;left:-10%;background:radial-gradient(circle at center,rgba(91,140,246,.9),transparent 62%);animation:drift1 30s ease-in-out infinite alternate;}
+  .b2{top:12%;right:-14%;background:radial-gradient(circle at center,rgba(37,204,148,.82),transparent 62%);animation:drift2 36s ease-in-out infinite alternate;}
+  .b3{bottom:-20%;left:8%;background:radial-gradient(circle at center,rgba(155,123,255,.88),transparent 62%);animation:drift3 33s ease-in-out infinite alternate;}
+  .b4{top:-8%;right:16%;background:radial-gradient(circle at center,rgba(157,178,214,.68),transparent 62%);animation:drift4 40s ease-in-out infinite alternate;}
+  .b5{bottom:2%;right:-8%;background:radial-gradient(circle at center,rgba(196,90,214,.55),transparent 62%);animation:drift5 34s ease-in-out infinite alternate;}
+  @keyframes drift1{from{transform:translate(0,0) scale(1);}to{transform:translate(7%,5%) scale(1.14);}}
+  @keyframes drift2{from{transform:translate(0,0) scale(1.05);}to{transform:translate(-6%,7%) scale(.92);}}
+  @keyframes drift3{from{transform:translate(0,0) scale(1);}to{transform:translate(5%,-6%) scale(1.15);}}
+  @keyframes drift4{from{transform:translate(0,0) scale(.95);}to{transform:translate(-7%,4%) scale(1.1);}}
+  @keyframes drift5{from{transform:translate(0,0) scale(1.08);}to{transform:translate(4%,-5%) scale(.9);}}
+
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+  .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;
+    background:radial-gradient(120% 100% at 50% 40%,transparent 42%,rgba(5,6,10,.55) 100%);}
+
+  /* ---------- deck frame ---------- */
+  .topbar{position:fixed;top:0;left:0;height:2px;background:var(--spectrum);z-index:50;
+    width:12.5%;transition:width .55s cubic-bezier(.7,0,.2,1);box-shadow:0 0 12px rgba(138,166,255,.5);}
+  .viewport{position:relative;z-index:5;height:100vh;height:100dvh;overflow:hidden;}
+  .track{display:flex;height:100%;will-change:transform;transition:transform .66s cubic-bezier(.72,0,.2,1);}
+  .slide{flex:0 0 100%;width:100%;height:100%;overflow-y:auto;overflow-x:hidden;}
+  .inner{min-height:100%;display:flex;flex-direction:column;justify-content:center;
+    max-width:960px;margin:0 auto;padding:96px 46px 132px;}
+
+  /* ---------- shared type ---------- */
+  .eyebrow{font-family:var(--font-mono);font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:500;margin:0 0 30px;display:inline-flex;align-items:center;gap:10px;}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--spectrum);box-shadow:0 0 10px rgba(138,166,255,.7);}
+  .display{font-family:var(--font-display);font-weight:500;letter-spacing:-.015em;line-height:1.08;
+    font-size:clamp(34px,5.2vw,58px);margin:0;max-width:20ch;}
+  .body-lg{color:var(--ink-soft);font-size:clamp(16px,1.85vw,19px);line-height:1.62;max-width:58ch;margin:24px 0 0;font-weight:400;}
+
+  /* ---------- glass ---------- */
+  .panel{position:relative;background:var(--glass);border:1px solid var(--glass-border);border-radius:26px;
+    padding:44px 46px;backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);
+    box-shadow:0 40px 90px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.1);}
+
+  /* ---------- intro ---------- */
+  .stat{margin-top:44px;display:flex;flex-direction:column;gap:14px;}
+  .stat__num{font-family:var(--font-display);font-weight:600;font-size:clamp(58px,9.5vw,108px);line-height:.82;
+    letter-spacing:-.025em;font-variant-numeric:tabular-nums;
+    background:var(--spectrum);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 70px rgba(91,140,246,.18);}
+  .stat__lbl{color:var(--ink-soft);font-size:clamp(15px,1.7vw,18px);max-width:44ch;line-height:1.5;margin:0;}
+
+  /* ---------- tl;dr ---------- */
+  .subhead{color:var(--ink-soft);font-size:clamp(15px,1.7vw,18px);line-height:1.55;max-width:64ch;margin:18px 0 0;}
+  .tldr{margin-top:30px;background:var(--glass);border:1px solid var(--glass-border);border-radius:20px;
+    padding:6px 26px;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+    box-shadow:0 30px 70px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);}
+  .tldr__row{display:grid;grid-template-columns:1.55fr 1.15fr 1fr 1.75fr;gap:18px;align-items:center;
+    padding:15px 0;border-bottom:1px solid var(--line);}
+  .tldr__row:last-child{border-bottom:0;}
+  .tldr__row--head{padding:13px 0 9px;}
+  .tldr__row--head span{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .tldr__lvl{font-family:var(--font-display);font-weight:500;font-size:16.5px;letter-spacing:-.01em;color:var(--ink);}
+  .tldr__row[data-c="1"] .tldr__lvl{color:var(--l1);} .tldr__row[data-c="2"] .tldr__lvl{color:var(--l2);}
+  .tldr__row[data-c="3"] .tldr__lvl{color:var(--l3);} .tldr__row[data-c="4"] .tldr__lvl{color:var(--l4);}
+  .tldr__cell{font-size:14px;color:var(--ink-soft);line-height:1.4;}
+  .tldr__cell .prov{font-family:var(--font-mono);font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-left:5px;}
+  .mlabel{display:none;}
+  .tldr-foot{margin-top:26px;display:flex;flex-direction:column;gap:10px;}
+  .tldr-line{font-size:15.5px;color:var(--ink-soft);line-height:1.55;max-width:70ch;margin:0;}
+  .tldr-line b{color:var(--ink);font-weight:600;}
+  .tldr-note{margin:0;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);letter-spacing:.02em;}
+
+  /* ---------- overview ---------- */
+  .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-top:40px;}
+  .lvlcard{text-align:left;background:var(--glass-2);border:1px solid var(--glass-border);border-radius:18px;
+    padding:24px;cursor:pointer;position:relative;overflow:hidden;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    transition:transform .32s ease,box-shadow .32s ease,border-color .32s ease,background .32s ease;
+    display:flex;flex-direction:column;gap:7px;}
+  .lvlcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c);
+    box-shadow:0 0 18px var(--c);transition:width .32s ease;}
+  .lvlcard:hover{transform:translateY(-4px);background:rgba(255,255,255,.06);
+    box-shadow:0 26px 54px rgba(0,0,0,.5);border-color:color-mix(in srgb,var(--c) 45%,transparent);}
+  .lvlcard:hover::before{width:6px;}
+  .lvlcard[data-c="1"]{--c:var(--l1);} .lvlcard[data-c="2"]{--c:var(--l2);}
+  .lvlcard[data-c="3"]{--c:var(--l3);} .lvlcard[data-c="4"]{--c:var(--l4);}
+  .lvlcard__tag{font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--c);}
+  .lvlcard__name{font-family:var(--font-display);font-weight:500;font-size:20px;letter-spacing:-.01em;color:var(--ink);}
+  .lvlcard__who{font-family:var(--font-mono);font-size:11.5px;color:var(--ink-faint);letter-spacing:.02em;}
+  .lvlcard__go{position:absolute;right:20px;bottom:18px;color:var(--ink-faint);font-size:17px;
+    transition:transform .32s ease,color .32s ease;}
+  .lvlcard:hover .lvlcard__go{transform:translateX(4px);color:var(--c);}
+  .hint{margin-top:26px;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-faint);letter-spacing:.03em;}
+
+  /* ---------- level slides ---------- */
+  .slide--level .inner{position:relative;}
+  .ghost{position:absolute;top:2%;right:2%;z-index:0;pointer-events:none;user-select:none;
+    font-family:var(--font-display);font-weight:600;line-height:1;letter-spacing:-.04em;
+    font-size:clamp(150px,26vw,320px);color:var(--c);opacity:.09;text-shadow:0 0 80px var(--c);}
+  .slide--level .panel{z-index:1;}
+  .toprow{display:flex;align-items:center;gap:13px;flex-wrap:wrap;margin-bottom:22px;}
+  .tag{font-family:var(--font-mono);font-size:12.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);padding:8px 13px;border-radius:9px;
+    border:1px solid color-mix(in srgb,var(--c) 30%,transparent);box-shadow:0 0 24px color-mix(in srgb,var(--c) 22%,transparent);}
+  .deliver{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);letter-spacing:.02em;}
+  .certify{font-family:var(--font-display);font-weight:500;letter-spacing:-.01em;line-height:1.24;
+    font-size:clamp(21px,3vw,30px);margin:0 0 28px;max-width:30ch;color:var(--ink);}
+  .facts{display:flex;gap:36px;flex-wrap:wrap;padding:20px 0;margin-bottom:28px;
+    border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .fact{display:flex;flex-direction:column;gap:5px;}
+  .fact__k{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .fact__v{font-size:15.5px;font-weight:600;color:var(--ink);}
+  .fact__v .prov{font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--ink-faint);
+    text-transform:uppercase;letter-spacing:.05em;margin-left:7px;vertical-align:middle;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:38px;}
+  .two h4{font-family:var(--font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--ink-faint);margin:0 0 12px;font-weight:500;}
+  .two p{margin:0;color:var(--ink-soft);font-size:15.5px;line-height:1.62;}
+  .two ul{margin:0;padding:0;list-style:none;}
+  .two li{position:relative;padding:0 0 11px 21px;color:var(--ink-soft);font-size:15.5px;line-height:1.5;}
+  .two li:last-child{padding-bottom:0;}
+  .two li::before{content:"";position:absolute;left:2px;top:8px;width:6px;height:6px;border-radius:2px;
+    background:var(--c);box-shadow:0 0 10px var(--c);}
+  .measure{margin-top:28px;font-family:var(--font-mono);font-size:12px;color:var(--ink-mid);letter-spacing:.01em;line-height:1.55;}
+
+  .slide--level[data-level="1"]{--c:var(--l1);} .slide--level[data-level="2"]{--c:var(--l2);}
+  .slide--level[data-level="3"]{--c:var(--l3);} .slide--level[data-level="4"]{--c:var(--l4);}
+
+  /* ---------- leaders ---------- */
+  .asks{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:40px;}
+  .ask{background:var(--glass-2);border:1px solid var(--glass-border);border-radius:18px;padding:24px 26px;
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);}
+  .ask__n{font-family:var(--font-mono);font-size:12px;color:var(--accent);font-weight:600;letter-spacing:.05em;margin-bottom:10px;}
+  .ask h3{font-family:var(--font-display);font-weight:500;font-size:19px;letter-spacing:-.01em;margin:0 0 8px;color:var(--ink);}
+  .ask p{margin:0;color:var(--ink-soft);font-size:14.5px;line-height:1.55;}
+  .footnote{margin-top:28px;font-size:13px;color:var(--ink-faint);line-height:1.6;}
+
+  /* ---------- chrome ---------- */
+  .edge{position:fixed;top:0;bottom:0;width:9%;max-width:120px;z-index:30;border:0;background:transparent;cursor:pointer;
+    display:flex;align-items:center;color:var(--ink-faint);opacity:0;transition:opacity .25s ease;}
+  .edge:hover{opacity:.9;}
+  .edge svg{width:26px;height:26px;}
+  .edge.left{left:0;justify-content:flex-start;padding-left:16px;}
+  .edge.right{right:0;justify-content:flex-end;padding-right:16px;}
+  .edge:disabled{cursor:default;opacity:0 !important;}
+
+  .chrome{position:fixed;left:0;right:0;bottom:0;height:70px;z-index:40;
+    display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 24px;
+    background:linear-gradient(180deg,rgba(9,11,18,0),rgba(9,11,18,.85) 55%);pointer-events:none;}
+  .chrome > *{pointer-events:auto;}
+  .brand{font-family:var(--font-mono);font-size:12px;color:var(--ink-faint);letter-spacing:.04em;white-space:nowrap;}
+  .dots{display:flex;gap:10px;align-items:center;padding:9px 14px;border-radius:100px;
+    background:var(--glass);border:1px solid var(--glass-border);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);}
+  .dot-btn{width:8px;height:8px;border-radius:50%;border:0;padding:0;cursor:pointer;background:rgba(255,255,255,.22);
+    transition:transform .25s ease,background .25s ease,box-shadow .25s ease;}
+  .dot-btn:hover{transform:scale(1.3);background:rgba(255,255,255,.45);}
+  .dot-btn.is-active{transform:scale(1.5);background:#fff;box-shadow:0 0 12px rgba(255,255,255,.8);}
+  .dot-btn[data-c="1"].is-active{background:var(--l1);box-shadow:0 0 14px var(--l1);}
+  .dot-btn[data-c="2"].is-active{background:var(--l2);box-shadow:0 0 14px var(--l2);}
+  .dot-btn[data-c="3"].is-active{background:var(--l3);box-shadow:0 0 14px var(--l3);}
+  .dot-btn[data-c="4"].is-active{background:var(--l4);box-shadow:0 0 14px var(--l4);}
+  .nav{display:flex;align-items:center;gap:11px;font-family:var(--font-mono);font-size:12.5px;color:var(--ink-mid);}
+  .nav__count{min-width:46px;text-align:center;letter-spacing:.04em;}
+  .nav__btn{width:40px;height:40px;border-radius:12px;border:1px solid var(--glass-border);background:var(--glass);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;color:var(--ink);
+    backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    transition:transform .2s ease,box-shadow .2s ease,opacity .2s ease,background .2s ease;}
+  .nav__btn:hover{transform:translateY(-1px);background:rgba(255,255,255,.1);box-shadow:0 10px 22px rgba(0,0,0,.4);}
+  .nav__btn:disabled{opacity:.3;cursor:default;transform:none;box-shadow:none;}
+  .nav__btn.is-next{background:rgba(255,255,255,.92);color:#0b0e16;border-color:transparent;box-shadow:0 0 24px rgba(255,255,255,.25);}
+  .nav__btn.is-next:hover{background:#fff;}
+  .nav__btn svg{width:17px;height:17px;}
+
+  /* ---------- reveal ---------- */
+  .anim{opacity:0;transform:translateY(16px);filter:blur(6px);
+    transition:opacity .6s ease,transform .6s cubic-bezier(.22,1,.36,1),filter .6s ease;}
+  .slide.is-active .anim{opacity:1;transform:none;filter:none;transition-delay:var(--d,0s);}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:760px){
+    .inner{padding:84px 22px 122px;}
+    .panel{padding:30px 24px;}
+    .grid4,.asks{grid-template-columns:1fr;}
+    .two{grid-template-columns:1fr;gap:24px;}
+    .facts{gap:22px;}
+    .ghost{opacity:.08;}
+    .edge,.brand{display:none;}
+    .blob{width:90vw;height:90vw;}
+    .tldr{padding:4px 18px;}
+    .tldr__row{grid-template-columns:1fr;gap:5px;padding:15px 0;}
+    .tldr__row--head{display:none;}
+    .tldr__lvl{font-size:17px;margin-bottom:3px;}
+    .mlabel{display:inline;color:var(--ink-faint);font-family:var(--font-mono);font-size:10px;
+      letter-spacing:.06em;text-transform:uppercase;margin-right:5px;}
+  }
+  @media (max-width:420px){ .nav__count{min-width:40px;} }
+
+  @media (prefers-reduced-motion:reduce){
+    .track{transition:none;}
+    .anim{opacity:1;transform:none;filter:none;transition:none;}
+    .topbar{transition:none;}
+    .blob{animation:none;}
+  }
+  /* team-meeting closing slide */
+  .script{display:flex;flex-direction:column;gap:13px;margin-top:10px;max-width:66ch;}
+  .script__line{position:relative;padding:15px 20px 15px 24px;border-radius:14px;
+    background:var(--glass-2);border:1px solid var(--glass-border);
+    color:var(--ink-soft);font-size:clamp(15px,1.6vw,17px);line-height:1.6;}
+  .script__line::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:3px;
+    border-radius:3px;background:var(--l1);box-shadow:0 0 12px var(--l1);}
+  .script__line b{color:var(--ink);font-weight:600;}
+  .script-facts{display:flex;flex-wrap:wrap;gap:14px 32px;margin-top:26px;}
+  .script-facts span{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--ink-soft);max-width:32ch;}
+  .script-facts i{font-style:normal;font-family:var(--font-mono);font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--ink-mid);}
+  .slide--interlude .inner{align-items:center;text-align:center;}
+  .slide--interlude .body-lg{margin-left:auto;margin-right:auto;max-width:50ch;}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+  <div class="blob b4"></div>
+  <div class="blob b5"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="topbar" id="topbar" aria-hidden="true"></div>
+
+<div class="viewport">
+  <div class="track" id="track">
+
+    <!-- 1. WHY -->
+    <section class="slide" aria-label="Why we're doing this">
+      <div class="inner">
+        <span class="eyebrow anim" style="--d:.02s"><span class="dot"></span>FY27 · For Client Ops leaders</span>
+        <h1 class="display anim" style="--d:.1s">Here's our goal this year, and how we'll get there.</h1>
+        <div class="stat anim" style="--d:.2s">
+          <span class="stat__num" id="counter" data-target="10000">0</span>
+          <p class="stat__lbl">hours of team capacity we want to win back with AI this year.</p>
+        </div>
+        <p class="body-lg anim" style="--d:.32s">To help us get there, the AI Operations and Enablement teams are certifying Client Ops across several levels of AI fluency, through one formal certification program. The rest of this deck breaks down each level and when it lands.</p>
+      </div>
+    </section>
+
+    <!-- 2. TL;DR -->
+    <section class="slide" aria-label="The short version">
+      <div class="inner">
+        <span class="eyebrow anim" style="--d:.02s"><span class="dot"></span>The short version</span>
+        <h2 class="display anim" style="--d:.1s">If you only read one screen, read this one.</h2>
+        <p class="subhead anim" style="--d:.16s">We're building and assigning a formal, four-level AI certification for Client Ops, delivered through WorkRamp and running August through March, to help win back 10,000 hours of team capacity. Everyone starts at Level 1, and people move up only as far as their role calls for. Each level is earned by building or doing something real and having it checked.</p>
+
+        <div class="tldr anim" style="--d:.22s">
+          <div class="tldr__row tldr__row--head">
+            <span>Level</span><span>Who</span><span>By when</span><span>What they can do</span>
+          </div>
+          <div class="tldr__row" data-c="1">
+            <span class="tldr__lvl">Level 1 · AI User</span>
+            <span class="tldr__cell"><i class="mlabel">Who</i>Everyone</span>
+            <span class="tldr__cell"><i class="mlabel">By</i>Sep 30, 2026</span>
+            <span class="tldr__cell"><i class="mlabel">Can</i>Uses AI well and can check and fix its output</span>
+          </div>
+          <div class="tldr__row" data-c="2">
+            <span class="tldr__lvl">Level 2 · Builder (personal)</span>
+            <span class="tldr__cell"><i class="mlabel">Who</i>All individual contributors</span>
+            <span class="tldr__cell"><i class="mlabel">By</i>Nov 1, 2026</span>
+            <span class="tldr__cell"><i class="mlabel">Can</i>Builds a personal tool that saves them time</span>
+          </div>
+          <div class="tldr__row" data-c="3">
+            <span class="tldr__lvl">Level 3 · Builder (team)</span>
+            <span class="tldr__cell"><i class="mlabel">Who</i>Leaders and Champions</span>
+            <span class="tldr__cell"><i class="mlabel">By</i>End of Jan 2027<span class="prov">prov.</span></span>
+            <span class="tldr__cell"><i class="mlabel">Can</i>Builds a tool their team actually uses</span>
+          </div>
+          <div class="tldr__row" data-c="4">
+            <span class="tldr__lvl">Level 4 · Org Builder</span>
+            <span class="tldr__cell"><i class="mlabel">Who</i>Leaders and AI Ops</span>
+            <span class="tldr__cell"><i class="mlabel">By</i>End of Mar 2027<span class="prov">prov.</span></span>
+            <span class="tldr__cell"><i class="mlabel">Can</i>Sets up and runs an AI function for their team</span>
+          </div>
+        </div>
+
+        <div class="tldr-foot anim" style="--d:.3s">
+          <p class="tldr-line"><b>What we need from leaders:</b> set the expectation, protect the time, and hold teams to finishing. Enablement builds and runs the program, but whether it lands depends on leaders requiring it and protecting the time.</p>
+          <p class="tldr-note">The rest of this deck is the detail. If you're pressed, you've got the gist.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. OVERVIEW -->
+    <section class="slide" aria-label="The four levels">
+      <div class="inner">
+        <span class="eyebrow anim" style="--d:.02s"><span class="dot"></span>The plan</span>
+        <h2 class="display anim" style="--d:.1s">The program runs across four levels, and not everyone needs all four.</h2>
+        <p class="body-lg anim" style="--d:.17s">Each level is earned by doing real work that holds up to review, so it reflects what a person can really do. People climb only as far as their role needs. This walks through what's coming for your teams, and the last slide covers where we'll need you.</p>
+        <div class="grid4 anim" style="--d:.23s">
+          <button class="lvlcard" data-c="1" data-goto="3">
+            <span class="lvlcard__tag">Level 1</span>
+            <span class="lvlcard__name">AI User</span>
+            <span class="lvlcard__who">Everyone in Client Ops</span>
+            <span class="lvlcard__go" aria-hidden="true">→</span>
+          </button>
+          <button class="lvlcard" data-c="2" data-goto="4">
+            <span class="lvlcard__tag">Level 2</span>
+            <span class="lvlcard__name">AI Builder, personal</span>
+            <span class="lvlcard__who">All individual contributors</span>
+            <span class="lvlcard__go" aria-hidden="true">→</span>
+          </button>
+          <button class="lvlcard" data-c="3" data-goto="5">
+            <span class="lvlcard__tag">Level 3</span>
+            <span class="lvlcard__name">AI Builder, team</span>
+            <span class="lvlcard__who">Leaders and Champions</span>
+            <span class="lvlcard__go" aria-hidden="true">→</span>
+          </button>
+          <button class="lvlcard" data-c="4" data-goto="6">
+            <span class="lvlcard__tag">Level 4</span>
+            <span class="lvlcard__name">Org Builder</span>
+            <span class="lvlcard__who">Leaders and AI Ops</span>
+            <span class="lvlcard__go" aria-hidden="true">→</span>
+          </button>
+        </div>
+        <p class="hint anim" style="--d:.3s">Move through the slides for the detail on each level, or tap a card to jump straight to one.</p>
+      </div>
+    </section>
+
+    <!-- 4. LEVEL 1 -->
+    <section class="slide slide--level" data-level="1" aria-label="Level 1, AI User">
+      <div class="inner">
+        <div class="ghost" aria-hidden="true">1</div>
+        <div class="panel anim" style="--d:.05s">
+          <div class="toprow">
+            <span class="tag">Level 1 · AI User</span>
+            <span class="deliver">One self-paced WorkRamp path</span>
+          </div>
+          <h2 class="certify">Everyone on your team can use AI confidently in daily work, and they can tell when its output is solid and fix it when it isn't.</h2>
+          <div class="facts">
+            <div class="fact"><span class="fact__k">Who it's for</span><span class="fact__v">Everyone in Client Ops</span></div>
+            <div class="fact"><span class="fact__k">Reaches the field</span><span class="fact__v">By Aug 30, 2026</span></div>
+            <div class="fact"><span class="fact__k">Due</span><span class="fact__v">Sep 30, 2026</span></div>
+          </div>
+          <div class="two">
+            <div>
+              <h4>What it teaches</h4>
+              <p>This level builds on AI Fluency and AI Tools. On top of those, people take a short course on tokens and right-sizing their AI use, then pass a learning check where they apply what they've learned. By the end they can spot weak output, fix it, send work to the right tool, and know where the final call is still theirs.</p>
+            </div>
+            <div>
+              <h4>How it's earned</h4>
+              <ul>
+                <li>They finish both earlier paths, AI Fluency and AI Tools, which carry over if those are already done.</li>
+                <li>They take a short course on tokens and right-sizing their AI use.</li>
+                <li>They pass a learning check where they apply what they've learned.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="measure">We'll track the learning-check pass rate and completion across the team.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. LEVEL 2 -->
+    <section class="slide slide--level" data-level="2" aria-label="Level 2, AI Builder personal">
+      <div class="inner">
+        <div class="ghost" aria-hidden="true">2</div>
+        <div class="panel anim" style="--d:.05s">
+          <div class="toprow">
+            <span class="tag">Level 2 · AI Builder, personal</span>
+            <span class="deliver">WorkRamp path plus Champion build sessions</span>
+          </div>
+          <h2 class="certify">Someone on your team has built a personal tool, a Skill or a Dust agent, that runs on its own and saves them time.</h2>
+          <div class="facts">
+            <div class="fact"><span class="fact__k">Who it's for</span><span class="fact__v">All individual contributors</span></div>
+            <div class="fact"><span class="fact__k">Reaches the field</span><span class="fact__v">By Oct 1, 2026</span></div>
+            <div class="fact"><span class="fact__k">Due</span><span class="fact__v">Nov 1, 2026</span></div>
+          </div>
+          <div class="two">
+            <div>
+              <h4>What it teaches</h4>
+              <p>This is the step from using AI to building with it. People pick between a Skill and a Dust agent, tighten a rough first version until it runs reliably, measure the time it saves, and package it to submit.</p>
+            </div>
+            <div>
+              <h4>How it's earned</h4>
+              <ul>
+                <li>They publish a working Skill or Dust agent.</li>
+                <li>They submit the problem it solves, a demo on real input, the time it saves, and a registry entry.</li>
+                <li>A Champion scores it against the rubric, and a 30-day check confirms it's still in use.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="measure">We'll track certified builds by team and the hours saved that hold up after the 30-day check.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. LEVEL 3 -->
+    <section class="slide slide--level" data-level="3" aria-label="Level 3, AI Builder team">
+      <div class="inner">
+        <div class="ghost" aria-hidden="true">3</div>
+        <div class="panel anim" style="--d:.05s">
+          <div class="toprow">
+            <span class="tag">Level 3 · AI Builder, team</span>
+            <span class="deliver">Async primer plus a live cohort with AI Ops</span>
+          </div>
+          <h2 class="certify">A lead or Champion on your team has built a tool the team actually uses.</h2>
+          <div class="facts">
+            <div class="fact"><span class="fact__k">Who it's for</span><span class="fact__v">Level 2 holders, mainly leaders and Champions</span></div>
+            <div class="fact"><span class="fact__k">Reaches the field</span><span class="fact__v">First cohort by Nov 2026<span class="prov">provisional</span></span></div>
+            <div class="fact"><span class="fact__k">Due</span><span class="fact__v">End of Jan 2027<span class="prov">provisional</span></span></div>
+          </div>
+          <div class="two">
+            <div>
+              <h4>What it teaches</h4>
+              <p>This is where people build something the whole team relies on. They set up the tools to build with, which are Claude Code and GitHub, work from a shared foundation the AI Ops team provides, and help the team start using what they make.</p>
+            </div>
+            <div>
+              <h4>How it's earned</h4>
+              <ul>
+                <li>They build a team tool on that shared foundation.</li>
+                <li>A teammate demos it live, and the usage data shows at least three people using it who didn't build it.</li>
+                <li>They add it to the team library and give a short teach-back at AI Show and Tell.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="measure">We'll track certified team tools whose adoption shows up in the usage data.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. LEVEL 4 -->
+    <section class="slide slide--level" data-level="4" aria-label="Level 4, Org Builder">
+      <div class="inner">
+        <div class="ghost" aria-hidden="true">4</div>
+        <div class="panel anim" style="--d:.05s">
+          <div class="toprow">
+            <span class="tag">Level 4 · Org Builder</span>
+            <span class="deliver">Still being scoped · design happens in H2</span>
+          </div>
+          <h2 class="certify">The aim is for a leader to set up, govern, and coach an agentic function for their team.</h2>
+          <div class="facts">
+            <div class="fact"><span class="fact__k">Who it's for</span><span class="fact__v">Leaders and AI Ops</span></div>
+            <div class="fact"><span class="fact__k">Reaches the field</span><span class="fact__v">Feb 2027<span class="prov">provisional</span></span></div>
+            <div class="fact"><span class="fact__k">Due</span><span class="fact__v">End of Mar 2027<span class="prov">provisional</span></span></div>
+          </div>
+          <div class="two">
+            <div>
+              <h4>What it teaches</h4>
+              <p>This level isn't finalized. We're still designing it with the AI Ops team, and it depends on infrastructure that isn't in place yet. Our current thinking is that a leader sets up how a whole team works with AI day to day, guides how other people build, and coaches them using live data.</p>
+            </div>
+            <div>
+              <h4>How it might be earned</h4>
+              <ul>
+                <li>Set up a working queue or set of rules for the team.</li>
+                <li>Review other people's team builds as a validator.</li>
+                <li>Coach the team using live performance data.</li>
+              </ul>
+            </div>
+          </div>
+          <p class="measure">We'll define how success is measured during H2 design.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. LEADERS -->
+    <section class="slide" aria-label="How leaders help">
+      <div class="inner">
+        <span class="eyebrow anim" style="--d:.02s"><span class="dot"></span>Your part</span>
+        <h2 class="display anim" style="--d:.1s">This is where leaders make the difference.</h2>
+        <p class="body-lg anim" style="--d:.17s">Enablement can build this program and run it, but it can't create the requirement, protect people's time, or set the expectation. Those three things sit with you, and they're what decide whether the program lands.</p>
+        <div class="asks anim" style="--d:.23s">
+          <div class="ask">
+            <div class="ask__n">01</div>
+            <h3>Set the expectation</h3>
+            <p>Tell your teams this matters and has leadership behind it, and keep saying it as the program rolls out.</p>
+          </div>
+          <div class="ask">
+            <div class="ask__n">02</div>
+            <h3>Protect the time</h3>
+            <p>Treat the work as part of the job, and hold real time open for people to do it.</p>
+          </div>
+          <div class="ask">
+            <div class="ask__n">03</div>
+            <h3>Hold teams to finishing</h3>
+            <p>Expect people to finish, and hold your Champions to running their sessions.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. INTERLUDE: hand-off to team -->
+    <section class="slide slide--interlude" aria-label="A slide for your team">
+      <div class="inner">
+        <span class="eyebrow anim" style="--d:.02s"><span class="dot"></span>One more thing</span>
+        <h2 class="display anim" style="--d:.12s">The next page is for your team.</h2>
+        <p class="body-lg anim" style="--d:.22s">It's a slide you can bring to your next team meeting to help us reinforce Level 1 early. Put it up, walk through it, and point everyone at WorkRamp.</p>
+      </div>
+    </section>
+
+    <!-- 10. TEAM-FACING L1 SLIDE -->
+    <section class="slide" aria-label="Level 1 is here">
+      <div class="inner">
+        <span class="eyebrow anim" style="--d:.02s"><span class="dot"></span>Client Ops · AI certification</span>
+        <h2 class="display anim" style="--d:.1s">Level 1 is here, and it's for all of us.</h2>
+        <p class="body-lg anim" style="--d:.17s">This is the first step in our AI certification. Everyone in Client Ops completes Level 1, and it builds on the AI work you've already done.</p>
+        <div class="script anim" style="--d:.23s">
+          <p class="script__line">It builds on the <b>AI Fluency</b> and <b>AI Tools</b> paths you've already done.</p>
+          <p class="script__line">On top of that, there's a short course on tokens and a learning check where you apply what you know.</p>
+          <p class="script__line">If you finished the earlier paths, this is a light lift. If you skipped any, you'll do those first.</p>
+          <p class="script__line">Find it in <b>WorkRamp</b> and complete it by <b>September 30</b>. Questions? Drop them in the channel.</p>
+        </div>
+        <div class="script-facts anim" style="--d:.3s">
+          <span><i>Who</i>Everyone in Client Ops</span>
+          <span><i>What</i>Prior paths, a short tokens course, and a learning check</span>
+          <span><i>Where</i>WorkRamp</span>
+          <span><i>Due</i>Sep 30, 2026</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- edge arrows -->
+<button class="edge left" id="edgePrev" aria-label="Previous slide">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+</button>
+<button class="edge right" id="edgeNext" aria-label="Next slide">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+</button>
+
+<!-- bottom chrome -->
+<div class="chrome">
+  <div class="brand">AI certification · Client Ops</div>
+  <div class="dots" id="dots" role="tablist" aria-label="Slides"></div>
+  <div class="nav">
+    <button class="nav__btn" id="prevBtn" aria-label="Previous slide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <span class="nav__count" id="count">1 / 10</span>
+    <button class="nav__btn is-next" id="nextBtn" aria-label="Next slide">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var track = document.getElementById('track');
+  var slides = Array.prototype.slice.call(track.children);
+  var total = slides.length;
+  var current = 0;
+  var counted = false;
+
+  var levelForSlide = {3:'1',4:'2',5:'3',6:'4',9:'1'};
+  var accentForSlide = {0:0,1:0,2:0,3:1,4:2,5:3,6:4,7:0,8:0,9:1};
+
+  var blobs = {
+    b1: document.querySelector('.b1'),
+    b2: document.querySelector('.b2'),
+    b3: document.querySelector('.b3'),
+    b4: document.querySelector('.b4'),
+    b5: document.querySelector('.b5')
+  };
+  var accentStates = {
+    0:{b1:.34,b2:.3,b3:.34,b4:.24,b5:.22},
+    1:{b1:.55,b2:.14,b3:.16,b4:.12,b5:.12},
+    2:{b1:.14,b2:.55,b3:.16,b4:.12,b5:.12},
+    3:{b1:.14,b2:.16,b3:.58,b4:.12,b5:.18},
+    4:{b1:.2,b2:.12,b3:.2,b4:.5,b5:.14}
+  };
+  function setAccent(n){
+    var s = accentStates[n] || accentStates[0];
+    for(var k in blobs){ if(blobs[k]) blobs[k].style.opacity = s[k]; }
+  }
+
+  var dotsWrap = document.getElementById('dots');
+  var dots = [];
+  slides.forEach(function(s,i){
+    var b = document.createElement('button');
+    b.className = 'dot-btn';
+    b.setAttribute('role','tab');
+    b.setAttribute('aria-label','Go to slide '+(i+1));
+    if(levelForSlide[i]) b.setAttribute('data-c', levelForSlide[i]);
+    b.addEventListener('click', function(){ goTo(i); });
+    dotsWrap.appendChild(b);
+    dots.push(b);
+  });
+
+  var topbar = document.getElementById('topbar');
+  var countEl = document.getElementById('count');
+  var prevBtn = document.getElementById('prevBtn');
+  var nextBtn = document.getElementById('nextBtn');
+  var edgePrev = document.getElementById('edgePrev');
+  var edgeNext = document.getElementById('edgeNext');
+
+  function runCount(){
+    var el = document.getElementById('counter');
+    if(!el || counted) return;
+    counted = true;
+    var target = parseInt(el.getAttribute('data-target'),10)||0;
+    if(reduce){ el.textContent = target.toLocaleString('en-US'); return; }
+    var start=null, dur=1700;
+    function ease(t){ return 1-Math.pow(1-t,3); }
+    function step(ts){
+      if(start===null) start=ts;
+      var t=Math.min((ts-start)/dur,1);
+      el.textContent = Math.round(ease(t)*target).toLocaleString('en-US');
+      if(t<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  function goTo(i){
+    current = Math.max(0, Math.min(total-1, i));
+    track.style.transform = 'translateX(' + (-current*100) + '%)';
+    slides.forEach(function(s,idx){ s.classList.toggle('is-active', idx===current); });
+    dots.forEach(function(d,idx){
+      var on = idx===current;
+      d.classList.toggle('is-active', on);
+      d.setAttribute('aria-selected', on ? 'true':'false');
+    });
+    countEl.textContent = (current+1) + ' / ' + total;
+    topbar.style.width = (((current+1)/total)*100) + '%';
+    setAccent(accentForSlide[current] || 0);
+
+    var atStart = current===0, atEnd = current===total-1;
+    prevBtn.disabled = atStart; edgePrev.disabled = atStart;
+    nextBtn.disabled = atEnd;  edgeNext.disabled = atEnd;
+
+    if(current===0) runCount();
+  }
+  function next(){ if(current<total-1) goTo(current+1); }
+  function prev(){ if(current>0) goTo(current-1); }
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+  edgeNext.addEventListener('click', next);
+  edgePrev.addEventListener('click', prev);
+
+  document.querySelectorAll('[data-goto]').forEach(function(el){
+    el.addEventListener('click', function(){ goTo(parseInt(el.getAttribute('data-goto'),10)); });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key==='ArrowRight' || e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft' || e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key===' '){ e.preventDefault(); next(); }
+    else if(e.key==='Home'){ e.preventDefault(); goTo(0); }
+    else if(e.key==='End'){ e.preventDefault(); goTo(total-1); }
+  });
+
+  var tsx=0, tsy=0, touching=false;
+  var vp = document.querySelector('.viewport');
+  vp.addEventListener('touchstart', function(e){
+    var t=e.changedTouches[0]; tsx=t.clientX; tsy=t.clientY; touching=true;
+  }, {passive:true});
+  vp.addEventListener('touchend', function(e){
+    if(!touching) return; touching=false;
+    var t=e.changedTouches[0];
+    var dx=t.clientX-tsx, dy=t.clientY-tsy;
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.4){ if(dx<0) next(); else prev(); }
+  }, {passive:true});
+
+  setAccent(0);
+  goTo(0);
+})();
+</script>
+</body>
+</html>
